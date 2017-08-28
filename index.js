@@ -3,6 +3,9 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
+io.set('transports', ['xhr-polling']);
+io.set('polling duration', 10);
+
 app.use(express.static('public'));
 
 app.get('/', function (req, res) {
@@ -97,6 +100,6 @@ function connectionCallback(socket) {
 }
 
 
-http.listen(PORT, function () {
-  console.log('listening on *: ', PORT);
+http.listen(3000, function () {
+  console.log('listening on *:3000');
 });
