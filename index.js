@@ -77,7 +77,7 @@ function accept(socket) {
 function printAllClients() {
   console.log('\n\n====================\nClients:\n');
   clients.forEach((element) => {
-    console.log('\t', element.id);
+    console.log('\t', element.socket.id);
   });
   console.log('====================');
 }
