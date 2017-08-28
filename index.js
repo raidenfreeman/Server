@@ -34,7 +34,9 @@ function onClientReady(socket) {
     return;
   }
 
-  socket.broadcast.emit('client ready');
+  // socket.broadcast.emit('client ready');
+
+
   // console.log('3');
   // setTimeout(() => {
   //   console.log('2');
@@ -86,7 +88,11 @@ function connectionCallback(socket) {
   console.log('user with id:', socket.id);
   clients.push({socket: socket});
   printAllClients();
+  console.log('\n\nSending welcome');
+  socket.emit('welcome');
+  socket.broadcast.emit('welcome');
   socket.on('client ready', () => {
+    console.log('\n\nCALLING ON CLIENT READY');
     onClientReady(socket)
   });
   socket.on('file input ready', () => {
