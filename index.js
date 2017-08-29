@@ -29,8 +29,16 @@ function onClientReady(socket) {
   //   console.log('\nWaiting for ', minimumClients - clients.length, ' more!');
   //   return;
   // }
-  clients.filter((x)=>x.id === socket.id)[0].isReady = true;
-  if(clients.every((x)=>x.isReady)) {
+  var rdyclient = clients.find((x) => x.id === socket.id)
+  if (rdyclient) {
+    rdyclient.isReady = true;
+  }
+  else {
+    console.log('\n\n\nNot found!');
+    printAllClients();
+    console.log('\nCurrent Client:',socket.id);
+  }
+  if (clients.every((x) => x.isReady)) {
     socket.broadcast.emit('everyone ready');
   }
 }
