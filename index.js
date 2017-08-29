@@ -45,8 +45,8 @@ function requestedPause(socket) {
   console.log('someone requested pause')
 }
 
-function fileLoaded(socket) {
-  io.emit('file loaded');
+function fileLoaded(socket, file) {
+  socket.broadcast.emit('file loaded', file);
   console.log('file ready for one client')
 }
 
@@ -86,8 +86,8 @@ function connectionCallback(socket) {
     accept(socket)
   });
 
-  socket.on('file loaded', () => {
-    fileLoaded(socket)
+  socket.on('file loaded', (file) => {
+    fileLoaded(socket, file)
   });
 
   socket.on('request pause', () => {
