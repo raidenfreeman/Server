@@ -14,7 +14,8 @@ var io = require('socket.io')(http);
 app.use(express.static('public'));
 
 app.get('/', function (req, res) {
-  res.sendFile(__dirname + '/public/index.html');
+  res.send('Under construction');
+  // res.sendFile(__dirname + '/public/index.html');
 });
 
 const minimumClients = 2;
@@ -29,8 +30,9 @@ function onClientReady(socket) {
   //   console.log('\nWaiting for ', minimumClients - clients.length, ' more!');
   //   return;
   // }
-  var rdyclient = clients.find((x) => x.id === socket.id)
+  var rdyclient = clients.find((x) => x.socket.id === socket.id)
   if (rdyclient) {
+    console.log('found   ', rdyclient.socket.id);
     rdyclient.isReady = true;
   }
   else {
@@ -38,8 +40,12 @@ function onClientReady(socket) {
     printAllClients();
     console.log('\nCurrent Client:',socket.id);
   }
-  if (clients.every((x) => x.isReady)) {
-    socket.broadcast.emit('everyone ready');
+  if (clients.every((x) => x.isReady) && clients.length >= minimumClients) {
+    console.log('everyone rdy');
+    io.emit('everyone ready');
+  }
+  else {
+    console.log('not rdy client: ',clients.find((x)=>!x.isReady));
   }
 }
 
@@ -80,7 +86,7 @@ function connectionCallback(socket) {
   socket.broadcast.emit('welcome');
 
   socket.on('disconnect', () => {
-    clients = clients.filter((x) => x.id !== socket.id)
+    clients = clients.filter((x) => x.socket.id !== socket.id)
   });
 
   socket.on('client ready', () => {
