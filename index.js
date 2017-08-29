@@ -6,13 +6,10 @@ const PORT = process.env.PORT || 3000;
 var http = require('http').Server(app);
 
 http.listen(PORT, function () {
-  console.log('listening on *:',PORT);
+  console.log('listening on *:', PORT);
 });
 
 var io = require('socket.io')(http);
-
-// io.set('transports', ['xhr-polling']);
-// io.set('polling duration', 10);
 
 app.use(express.static('public'));
 
@@ -27,52 +24,34 @@ let clients = [];
 io.on('connection', connectionCallback);
 
 function onClientReady(socket) {
-  console.log(socket.id, ' is ready!');
-  if (clients.length < minimumClients) {
-    console.log('\nWaiting for ', minimumClients - clients.length, ' more!');
-    socket.emit('welcome');
-    return;
+  // console.log(socket.id, ' is ready!');
+  // if (clients.length < minimumClients) {
+  //   console.log('\nWaiting for ', minimumClients - clients.length, ' more!');
+  //   return;
+  // }
+  clients.filter((x)=>x.id === socket.id)[0].isReady = true;
+  if(clients.every((x)=>x.isReady)) {
+    socket.broadcast.emit('everyone ready');
   }
-
-  // socket.broadcast.emit('client ready');
-
-
-  // console.log('3');
-  // setTimeout(() => {
-  //   console.log('2');
-  //   setTimeout(() => {
-  //     console.log('1');
-  //     setTimeout(() => {
-  //       console.log('starting!');
-  //       io.emit('start');
-  //     }, 1000)
-  //   }, 1000)
-  // }, 1000)
 }
 
 function requestedPlay(socket) {
-  socket.emit('play');
+  io.emit('play'); // tell everyone to play
   console.log('someone requested play')
 }
 
 function requestedPause(socket) {
-  socket.emit('pause');
+  io.emit('pause'); // tell everyone to pause
   console.log('someone requested pause')
 }
 
-
-function onFileInputReady(socket) {
-  socket.emit('file input ready');
-  console.log('file input ready for one client')
-}
-
 function fileLoaded(socket) {
-  socket.emit('file loaded');
+  io.emit('file loaded');
   console.log('file ready for one client')
 }
 
 function accept(socket) {
-  socket.emit('accept');
+  io.emit('accept');
   console.log('one client accepted')
 }
 
@@ -91,23 +70,30 @@ function connectionCallback(socket) {
   console.log('\n\nSending welcome');
   socket.emit('welcome');
   socket.broadcast.emit('welcome');
+
+  socket.on('disconnect', () => {
+    clients = clients.filter((x) => x.id !== socket.id)
+  });
+
   socket.on('client ready', () => {
-    console.log('\n\nCALLING ON CLIENT READY');
+    //vlc is open and file is loaded
     onClientReady(socket)
   });
-  socket.on('file input ready', () => {
-    onFileInputReady(socket)
-  });
+
   // socket.on('open vlc',()=>{console.log(socket)})
   socket.on('accept', () => {
+    //client accepts the current files from the other clients
     accept(socket)
   });
+
   socket.on('file loaded', () => {
     fileLoaded(socket)
   });
+
   socket.on('request pause', () => {
     requestedPause(socket)
   });
+
   socket.on('request play', () => {
     requestedPlay(socket)
   });
